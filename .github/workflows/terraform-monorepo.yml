@@ -1,0 +1,86 @@
+name: Terraform Monorepo Provisioner
+
+on:
+  push:
+    branches:
+      - "**" # Run on all branches
+      - "!main" # For branch-based provisioning
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action to perform"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - apply
+          - destroy
+      resource_path:
+        description: "Path to the resource directory"
+        required: true
+
+env:
+  TF_VERSION: "1.14.0"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect Resource Directory
+        id: detect
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "dir=${{ github.event.inputs.resource_path }}" >> $GITHUB_OUTPUT
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          else
+            # Extract bucket name from branch name (e.g., decommission/my-bucket or my-bucket)
+            BRANCH_NAME=${GITHUB_REF#refs/heads/}
+            
+            if [[ $BRANCH_NAME == decommission/* ]]; then
+              BUCKET_NAME=${BRANCH_NAME#decommission/}
+              echo "action=destroy" >> $GITHUB_OUTPUT
+            else
+              BUCKET_NAME=$BRANCH_NAME
+              echo "action=apply" >> $GITHUB_OUTPUT
+            fi
+            
+            DIR="terraform/resources/$BUCKET_NAME"
+            echo "dir=$DIR" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Terraform Init
+        working-directory: ${{ steps.detect.outputs.dir }}
+        run: |
+          # Remote state is handled by passing -backend-config or similar if using a global backend
+          # For this demo, we use local state or templated backend.
+          terraform init
+
+      - name: Terraform Apply/Destroy
+        working-directory: ${{ steps.detect.outputs.dir }}
+        run: |
+          if [ "${{ steps.detect.outputs.action }}" == "destroy" ]; then
+            terraform destroy -auto-approve
+          else
+            terraform apply -auto-approve
+          fi
