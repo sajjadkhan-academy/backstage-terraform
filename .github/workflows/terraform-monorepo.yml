@@ -36,26 +36,49 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug Workspace
+        run: |
+          echo "Listing all files in workspace:"
+          ls -R
+
       - name: Detect Resource Directory
         id: detect
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "dir=${{ github.event.inputs.resource_path }}" >> $GITHUB_OUTPUT
-            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+            DIR="${{ github.event.inputs.resource_path }}"
+            ACTION="${{ github.event.inputs.action }}"
           else
-            # Extract bucket name from branch name (e.g., decommission/my-bucket or my-bucket)
-            BRANCH_NAME=${GITHUB_REF#refs/heads/}
+            # Determine branch name reliably
+            if [ -n "$GITHUB_HEAD_REF" ]; then
+              BRANCH_NAME="$GITHUB_HEAD_REF"
+            else
+              BRANCH_NAME="$GITHUB_REF_NAME"
+            fi
             
+            echo "Working with branch: $BRANCH_NAME"
+
             if [[ $BRANCH_NAME == decommission/* ]]; then
               BUCKET_NAME=${BRANCH_NAME#decommission/}
-              echo "action=destroy" >> $GITHUB_OUTPUT
+              ACTION="destroy"
             else
               BUCKET_NAME=$BRANCH_NAME
-              echo "action=apply" >> $GITHUB_OUTPUT
+              ACTION="apply"
             fi
             
             DIR="terraform/resources/$BUCKET_NAME"
-            echo "dir=$DIR" >> $GITHUB_OUTPUT
+          fi
+
+          echo "Detected Directory: $DIR"
+          echo "Detected Action: $ACTION"
+
+          echo "dir=$DIR" >> $GITHUB_OUTPUT
+          echo "action=$ACTION" >> $GITHUB_OUTPUT
+
+          if [ ! -d "$DIR" ]; then
+            echo "::error::Directory $DIR not found in workspace!"
+            echo "Relevant workspace contents:"
+            ls -R terraform/resources 2>/dev/null || echo "terraform/resources directory missing!"
+            exit 1
           fi
 
       - name: Setup Terraform
