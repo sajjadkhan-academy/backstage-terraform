@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: test-342342342
+  description: test
+  annotations:
+    backstage.io/managed-by-location: url:https://github.com/sajjadkhan-academy/backstage-terraform/blob/test-342342342/terraform/resources/test-342342342/catalog-info.yaml
+    github.com/project-slug: sajjadkhan-academy/backstage-terraform
+  tags:
+    - gcp
+    - storage
+    - terraform
+  labels:
+    environment: dev
+spec:
+  type: storage
+  owner: group:platform-engineering
+  system: infrastructure
+  lifecycle: production
+  dependsOn: []
+  providesApis: []
