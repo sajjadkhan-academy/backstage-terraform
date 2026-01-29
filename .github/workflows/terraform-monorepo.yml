@@ -35,6 +35,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # On PRs, checkout the head branch (the one with the new changes)
+          # On pushes, checkout the default (current branch)
+          ref: ${{ github.event_pull_request.head.ref || github.ref }}
 
       - name: Debug Workspace
         run: |
