@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: backstage-demo-gcp-bucket-00
+  description: test
+  tags:
+    - gcp
+    - terraform
+spec:
+  type: storage
+  owner: user:default/guest
+  lifecycle: experimental
