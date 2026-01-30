@@ -1,31 +1,16 @@
-# GCP Bucket Module Outputs
+# Outputs for GCP Bucket Module
 
 output "bucket_name" {
-  value       = google_storage_bucket.bucket.name
   description = "The name of the created bucket"
+  value       = module.cloud_storage.name
 }
 
 output "bucket_url" {
-  value       = "gs://${google_storage_bucket.bucket.name}"
-  description = "The GCS URL of the bucket"
+  description = "The base URL of the bucket in format gs://bucket-name"
+  value       = module.cloud_storage.url
 }
 
 output "bucket_self_link" {
-  value       = google_storage_bucket.bucket.self_link
   description = "The self link of the bucket"
-}
-
-output "bucket_id" {
-  value       = google_storage_bucket.bucket.id
-  description = "The unique ID of the bucket"
-}
-
-output "bucket_location" {
-  value       = google_storage_bucket.bucket.location
-  description = "The location of the bucket"
-}
-
-output "bucket_storage_class" {
-  value       = google_storage_bucket.bucket.storage_class
-  description = "The storage class of the bucket"
+  value       = module.cloud_storage.bucket.self_link
 }
