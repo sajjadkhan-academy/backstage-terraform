@@ -20,7 +20,7 @@ on:
         required: true
 
 env:
-  TF_VERSION: "1.14.0"
+  TF_VERSION: "1.10.0"
 
 permissions:
   contents: read
@@ -61,15 +61,25 @@ jobs:
             
             echo "Working with branch: $BRANCH_NAME"
 
+            # Expected patterns:
+            # create/{env}/{name} -> DIR=terraform/resources/{env}/{name}, ACTION=apply
+            # decommission/{env}/{name} -> DIR=terraform/resources/{env}/{name}, ACTION=destroy
+
             if [[ $BRANCH_NAME == decommission/* ]]; then
-              BUCKET_NAME=${BRANCH_NAME#decommission/}
+              # Remove 'decommission/' prefix
+              PATH_PART=${BRANCH_NAME#decommission/}
               ACTION="destroy"
+              DIR="terraform/resources/$PATH_PART"
+            elif [[ $BRANCH_NAME == create/* ]]; then
+              # Remove 'create/' prefix
+              PATH_PART=${BRANCH_NAME#create/}
+              ACTION="apply"
+              DIR="terraform/resources/$PATH_PART"
             else
-              BUCKET_NAME=$BRANCH_NAME
+              # Fallback for old style or manual branches
+              DIR="terraform/resources/$BRANCH_NAME"
               ACTION="apply"
             fi
-            
-            DIR="terraform/resources/$BUCKET_NAME"
           fi
 
           echo "Detected Directory: $DIR"
@@ -80,8 +90,6 @@ jobs:
 
           if [ ! -d "$DIR" ]; then
             echo "::error::Directory $DIR not found in workspace!"
-            echo "Relevant workspace contents:"
-            ls -R terraform/resources 2>/dev/null || echo "terraform/resources directory missing!"
             exit 1
           fi
 
