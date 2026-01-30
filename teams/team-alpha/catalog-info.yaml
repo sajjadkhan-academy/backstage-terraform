@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: test-342342342
+  description: GCP Cloud Storage bucket provisioned via Backstage
+  annotations:
+    backstage.io/managed-by-location: "url:https://github.com/sajjadkhan-academy/backstage-terraform/blob/main/teams/team-alpha/bucket.tf"
+  tags:
+    - gcp
+    - storage
+    - infrastructure
+  links:
+    - url: https://console.cloud.google.com/storage/browser/test-342342342?project=fast-pagoda-474409-c7
+      title: GCP Console
+      icon: cloud
+spec:
+  type: storage
+  owner: team-alpha
+  system: team-alpha-infrastructure
+  dependsOn: []
