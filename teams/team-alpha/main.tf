@@ -5,11 +5,11 @@ terraform {
   required_version = ">= 1.0.0"
 
   # GCS backend for remote state storage
-  # Each team has an isolated state prefix
-  backend "gcs" {
-    bucket = "your-terraform-state-bucket"  # TODO: Replace with your GCS bucket
-    prefix = "terraform/state/team-alpha"
-  }
+  # Uncomment when you have a GCS bucket for state storage
+  # backend "gcs" {
+  #   bucket = "your-terraform-state-bucket"
+  #   prefix = "terraform/state/team-alpha"
+  # }
 
   required_providers {
     google = {
@@ -29,6 +29,7 @@ provider "google" {
 variable "project_id" {
   description = "The GCP project ID for team-alpha resources"
   type        = string
+  default     = "fast-pagoda-474409-c7" # Default project ID
 }
 
 variable "region" {
