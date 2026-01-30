@@ -1,0 +1,18 @@
+module "bucket_{{ bucket_name }}" {
+  source = "../../../../modules/gcp-bucket"
+
+  bucket_name   = "{{ bucket_name }}"
+  project_id    = "{{ project_id }}"
+  location      = "{{ location }}"
+  environment   = "{{ environment }}"
+  storage_class = "{{ storage_class }}"
+
+  # Best practices defaults
+  enable_versioning = true
+  prevent_public_access = true
+  
+  labels = {
+    managed_by = "backstage"
+    purpose    = "automated-provisioning"
+  }
+}
