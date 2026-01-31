@@ -75,7 +75,7 @@ jobs:
             - name: Terraform Init
               id: init
               working-directory: teams/${{ matrix.team }}
-              run: terraform init -backend=false # -backend=false for PR checks without state access
+              run: terraform init
 
             - name: Terraform Validate
               id: validate

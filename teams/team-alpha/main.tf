@@ -5,11 +5,11 @@ terraform {
   required_version = ">= 1.0.0"
 
   # GCS backend for remote state storage
-  # Uncomment when you have a GCS bucket for state storage
-  # backend "gcs" {
-  #   bucket = "your-terraform-state-bucket"
-  #   prefix = "terraform/state/team-alpha"
-  # }
+  # Each team has an isolated state prefix
+  backend "gcs" {
+    bucket = "terraform-state-backtage-demo"
+    prefix = "terraform/state/team-alpha"
+  }
 
   required_providers {
     google = {
